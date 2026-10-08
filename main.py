@@ -14,7 +14,7 @@ Base = declarative_base()
 # 2. Model Tabel Database
 class TodoModel(Base):
     __tablename__ = "todos"
-
+    priority = Column(String, default="low")
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     completed = Column(Boolean, default=False)
@@ -24,8 +24,10 @@ Base.metadata.create_all(bind=engine)
 # 3. Skema Data (Pydantic)
 class TodoCreate(BaseModel):
     title: str
+    priority: str = "low"
 
 class TodoResponse(BaseModel):
+    priority: str = "low"
     id: int
     title: str
     completed: bool
@@ -53,7 +55,7 @@ def read_todos(db: Session = Depends(get_db)):
 # POST: Tambah todo baru
 @app.post("/api/todos", response_model=TodoResponse)
 def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
-    db_todo = TodoModel(title=todo.title)
+    db_todo = TodoModel(title=todo.title, priority=todo.priority)
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
